@@ -17,8 +17,9 @@ mcp = FastMCP("svgwriter-mcp")
 # ---------------------------------------------------------------------------
 
 _documents: dict[str, svgwrite.Drawing] = {}
-_groups: dict[str, dict[str, Any]] = {}   # doc_id → {group_id → Group}
-_gradients: dict[str, list[dict]] = {}    # doc_id → [{id, type}]
+_groups: dict[str, dict[str, Any]] = {}      # doc_id → {group_id → Group}
+_gradients: dict[str, list[dict]] = {}        # doc_id → [{id, type}]
+_gradient_ids: dict[str, set[str]] = {}       # doc_id → set of gradient ids
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -56,9 +57,12 @@ def _new_id(prefix: str = "") -> str:
     return f"{prefix}{uuid.uuid4().hex[:8]}"
 
 
+_SIZE_RE = re.compile(r"[\d.]+")
+
+
 def _parse_size(value: str) -> float:
     """Extract the numeric portion of a size string like '800px' or '100%'."""
-    m = re.match(r"[\d.]+", str(value).strip())
+    m = _SIZE_RE.match(str(value).strip())
     return float(m.group()) if m else 800.0
 
 
@@ -87,6 +91,7 @@ def create_document(
     _documents[did] = dwg
     _groups[did] = {}
     _gradients[did] = []
+    _gradient_ids[did] = set()
     return _ok(doc_id=did, width=width, height=height)
 
 
@@ -112,6 +117,7 @@ def delete_document(doc_id: str) -> str:
     del _documents[doc_id]
     _groups.pop(doc_id, None)
     _gradients.pop(doc_id, None)
+    _gradient_ids.pop(doc_id, None)
     return _ok(doc_id=doc_id)
 
 
@@ -566,8 +572,7 @@ def add_linear_gradient(
     try:
         dwg = _get_doc(doc_id)
         gid = gradient_id or _new_id("lg_")
-        existing_ids = {g["id"] for g in _gradients.get(doc_id, [])}
-        if gid in existing_ids:
+        if gid in _gradient_ids[doc_id]:
             return _err(
                 f"Gradient id '{gid}' already exists in document '{doc_id}'."
             )
@@ -579,6 +584,7 @@ def add_linear_gradient(
             grad.add_stop_color(offset=offset, color=color, opacity=stop_opacity)
         dwg.defs.add(grad)
         _gradients[doc_id].append({"id": gid, "type": "linear"})
+        _gradient_ids[doc_id].add(gid)
         return _ok(gradient_id=gid, url_ref=f"url(#{gid})")
     except ValueError as e:
         return _err(str(e))
@@ -612,8 +618,7 @@ def add_radial_gradient(
     try:
         dwg = _get_doc(doc_id)
         gid = gradient_id or _new_id("rg_")
-        existing_ids = {g["id"] for g in _gradients.get(doc_id, [])}
-        if gid in existing_ids:
+        if gid in _gradient_ids[doc_id]:
             return _err(
                 f"Gradient id '{gid}' already exists in document '{doc_id}'."
             )
@@ -627,6 +632,7 @@ def add_radial_gradient(
             grad.add_stop_color(offset=offset, color=color, opacity=stop_opacity)
         dwg.defs.add(grad)
         _gradients[doc_id].append({"id": gid, "type": "radial"})
+        _gradient_ids[doc_id].add(gid)
         return _ok(gradient_id=gid, url_ref=f"url(#{gid})")
     except ValueError as e:
         return _err(str(e))
