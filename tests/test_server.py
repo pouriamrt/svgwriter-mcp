@@ -120,7 +120,7 @@ class TestDocuments:
         from mcp.server.fastmcp.utilities.types import Image
         assert isinstance(result[1], Image)
         img_content = result[1].to_image_content()
-        assert img_content.mimeType == "image/svg+xml"
+        assert img_content.mimeType == "image/png"
 
     def test_get_svg_preview_unknown_errors(self):
         result = server.get_svg_preview(doc_id="nope")

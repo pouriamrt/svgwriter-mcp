@@ -130,21 +130,23 @@ def get_svg_string(doc_id: str) -> str:
 
 @mcp.tool()
 def get_svg_preview(doc_id: str) -> list:
-    """Return the SVG document as an inline image for visual preview.
+    """Return the SVG document as an inline PNG image for visual preview.
 
     Use this instead of get_svg_string when you want the client to render
-    the SVG visually rather than returning the raw XML text. Returns both
-    a text summary and an inline image/svg+xml content block.
+    the image visually. Returns a PNG image content block that MCP clients
+    such as Claude Desktop can display inline.
 
     Args:
         doc_id: The document to preview.
     """
     try:
+        import cairosvg
         dwg = _get_doc(doc_id)
-        svg_bytes = dwg.tostring().encode()
+        svg_str = dwg.tostring()
+        png_bytes = cairosvg.svg2png(bytestring=svg_str.encode())
         return [
             _ok(doc_id=doc_id, width=dwg["width"], height=dwg["height"]),
-            Image(data=svg_bytes, format="svg+xml"),
+            Image(data=png_bytes, format="png"),
         ]
     except ValueError as e:
         return _err(str(e))
