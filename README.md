@@ -48,19 +48,27 @@ uv run python example.py
 
 ## MCP Client Configuration
 
-Add to your MCP client config (e.g. Claude Desktop `claude_desktop_config.json`):
+Add to your Claude Desktop `claude_desktop_config.json`
+(`%APPDATA%\Claude\claude_desktop_config.json` on Windows,
+`~/Library/Application Support/Claude/claude_desktop_config.json` on macOS):
 
 ```json
 {
   "mcpServers": {
     "svgwriter": {
       "command": "uv",
-      "args": ["run", "python", "main.py"],
-      "cwd": "/path/to/svgwriter-mcp"
+      "args": [
+        "run",
+        "python",
+        "/path/to/svgwriter-mcp/main.py"
+      ]
     }
   }
 }
 ```
+
+> **Note:** Use the absolute path to `main.py` on your machine (e.g. `C:\\Users\\you\\svgwriter-mcp\\main.py` on Windows).
+> Using the full path avoids working-directory issues with Claude Desktop.
 
 ## Tool Reference
 
