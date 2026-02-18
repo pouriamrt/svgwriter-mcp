@@ -79,7 +79,8 @@ Add to your Claude Desktop `claude_desktop_config.json`
 | `create_document` | Create a new SVG document; returns `doc_id` |
 | `list_documents` | List all open documents with their sizes |
 | `delete_document` | Delete a document and free its state |
-| `get_svg_string` | Return the SVG XML as a string |
+| `get_svg_string` | Return the SVG XML as a raw string |
+| `get_svg_preview` | Return the SVG as an inline `image/svg+xml` content block for visual preview |
 | `save_file` | Write the SVG to a file on disk |
 
 ### Shapes

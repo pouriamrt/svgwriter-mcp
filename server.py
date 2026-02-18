@@ -7,6 +7,7 @@ from typing import Any, Optional
 
 import svgwrite
 from mcp.server.fastmcp import FastMCP
+from mcp.server.fastmcp.utilities.types import Image
 
 mcp = FastMCP("svgwriter-mcp")
 
@@ -123,6 +124,28 @@ def get_svg_string(doc_id: str) -> str:
     try:
         dwg = _get_doc(doc_id)
         return _ok(svg=dwg.tostring())
+    except ValueError as e:
+        return _err(str(e))
+
+
+@mcp.tool()
+def get_svg_preview(doc_id: str) -> list:
+    """Return the SVG document as an inline image for visual preview.
+
+    Use this instead of get_svg_string when you want the client to render
+    the SVG visually rather than returning the raw XML text. Returns both
+    a text summary and an inline image/svg+xml content block.
+
+    Args:
+        doc_id: The document to preview.
+    """
+    try:
+        dwg = _get_doc(doc_id)
+        svg_bytes = dwg.tostring().encode()
+        return [
+            _ok(doc_id=doc_id, width=dwg["width"], height=dwg["height"]),
+            Image(data=svg_bytes, format="svg+xml"),
+        ]
     except ValueError as e:
         return _err(str(e))
 

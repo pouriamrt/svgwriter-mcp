@@ -108,6 +108,25 @@ class TestDocuments:
     def test_get_svg_string_unknown_errors(self):
         err(server.get_svg_string(doc_id="nope"))
 
+    def test_get_svg_preview_returns_list(self, doc):
+        result = server.get_svg_preview(doc_id=doc)
+        assert isinstance(result, list)
+        assert len(result) == 2
+        # First item is JSON status string
+        status = json.loads(result[0])
+        assert status["status"] == "ok"
+        assert "width" in status
+        # Second item is an Image object with SVG mime type
+        from mcp.server.fastmcp.utilities.types import Image
+        assert isinstance(result[1], Image)
+        img_content = result[1].to_image_content()
+        assert img_content.mimeType == "image/svg+xml"
+
+    def test_get_svg_preview_unknown_errors(self):
+        result = server.get_svg_preview(doc_id="nope")
+        data = json.loads(result)
+        assert data["status"] == "error"
+
     def test_save_file(self, doc, tmp_path):
         path = str(tmp_path / "out.svg")
         result = ok(server.save_file(doc_id=doc, filepath=path))
