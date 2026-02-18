@@ -5,6 +5,7 @@ import re
 import uuid
 from typing import Any, Optional
 
+import cairosvg
 import svgwrite
 from mcp.server.fastmcp import FastMCP
 from mcp.server.fastmcp.utilities.types import Image
@@ -140,7 +141,6 @@ def get_svg_preview(doc_id: str) -> list:
         doc_id: The document to preview.
     """
     try:
-        import cairosvg
         dwg = _get_doc(doc_id)
         svg_str = dwg.tostring()
         png_bytes = cairosvg.svg2png(bytestring=svg_str.encode())
